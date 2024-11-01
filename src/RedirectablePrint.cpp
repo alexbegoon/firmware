@@ -210,7 +210,7 @@ void RedirectablePrint::log_to_ble(const char *logLevel, const char *format, va_
     if (config.security.debug_log_api_enabled && !pauseBluetoothLogging) {
         bool isBleConnected = false;
 #ifdef ARCH_ESP32
-        isBleConnected = nimbleBluetooth && nimbleBluetooth->isActive() && nimbleBluetooth->isConnected();
+        isBleConnected = bleInstance && bleInstance->isActive() && bleInstance->isConnected();
 #elif defined(ARCH_NRF52)
         isBleConnected = nrf52Bluetooth != nullptr && nrf52Bluetooth->isConnected();
 #endif
@@ -237,7 +237,7 @@ void RedirectablePrint::log_to_ble(const char *logLevel, const char *format, va_
             uint8_t *buffer = new uint8_t[meshtastic_LogRecord_size];
             size_t size = pb_encode_to_bytes(buffer, meshtastic_LogRecord_size, meshtastic_LogRecord_fields, &logRecord);
 #ifdef ARCH_ESP32
-            nimbleBluetooth->sendLog(buffer, size);
+            bleInstance->sendLog(buffer, size);
 #elif defined(ARCH_NRF52)
             nrf52Bluetooth->sendLog(buffer, size);
 #endif

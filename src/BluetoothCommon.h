@@ -29,4 +29,10 @@ class BluetoothApi
     virtual void clearBonds();
     virtual bool isConnected();
     virtual int getRssi() = 0;
+    virtual bool isActive();
+    virtual void sendLog(const uint8_t *logMessage, size_t length);
+    virtual void deinit();
 };
+
+// Factory function to create the appropriate Bluetooth implementation
+BluetoothApi *createBluetoothInstance();
