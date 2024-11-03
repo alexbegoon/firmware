@@ -201,8 +201,8 @@ void doDeepSleep(uint32_t msecToWake, bool skipPreflight = false)
 
 #if defined(ARCH_ESP32) && !MESHTASTIC_EXCLUDE_BLUETOOTH
     // Full shutdown of bluetooth hardware
-    if (nimbleBluetooth)
-        nimbleBluetooth->deinit();
+    if (bleInstance)
+        bleInstance->deinit();
 #endif
 
 #ifdef ARCH_ESP32

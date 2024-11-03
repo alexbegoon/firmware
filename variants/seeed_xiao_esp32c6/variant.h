@@ -4,6 +4,8 @@
 #define BUTTON_PIN 22 // This is the Program Button
 #define BUTTON_NEED_PULLUP
 
+#define SOC_I2C_NUM 2
+
 #define USE_RF95
 #define LORA_MISO 20
 #define LORA_SCK 19

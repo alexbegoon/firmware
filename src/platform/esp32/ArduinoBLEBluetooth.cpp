@@ -15,9 +15,9 @@ static ArduinoBLEBluetooth *bleInstancePtr = nullptr;
  */
 ArduinoBLEBluetooth::ArduinoBLEBluetooth()
     : meshService(MESH_SERVICE_UUID_PTR), // Mesh Service UUID
-      toRadio(TORADIO_UUID_PTR, BLEWrite | BLEWriteWithoutResponse, ""), fromRadio(FROMRADIO_UUID_PTR, BLERead | BLENotify, ""),
-      fromNum(FROMNUM_UUID_PTR, BLENotify, ""), logRadio(LOGRADIO_UUID_PTR, BLENotify, ""),
-      batteryService("180F"), // Battery Service UUID
+      fromNum(FROMNUM_UUID_PTR, BLENotify, ""), fromRadio(FROMRADIO_UUID_PTR, BLERead | BLENotify, ""),
+      toRadio(TORADIO_UUID_PTR, BLEWrite | BLEWriteWithoutResponse, ""), logRadio(LOGRADIO_UUID_PTR, BLENotify, ""),
+      deviceInfo("180F"), // Battery Service UUID
       batteryLevel("2A19", BLERead | BLENotify)
 {
     bleInstancePtr = this; // Assign the static instance pointer
@@ -39,7 +39,7 @@ void ArduinoBLEBluetooth::setup()
     BLE.setDeviceName("ESP32-C6_Device");
     BLE.setLocalName("ESP32-C6_Device");
     BLE.setAdvertisedService(meshService);
-    BLE.setAdvertisedService(batteryService);
+    BLE.setAdvertisedService(deviceInfo);
 
     // Add characteristics to Mesh Service
     meshService.addCharacteristic(toRadio);
@@ -48,11 +48,11 @@ void ArduinoBLEBluetooth::setup()
     meshService.addCharacteristic(logRadio);
 
     // Add Battery Service and its characteristic
-    batteryService.addCharacteristic(batteryLevel);
+    deviceInfo.addCharacteristic(batteryLevel);
 
     // Add services to BLE
     BLE.addService(meshService);
-    BLE.addService(batteryService);
+    BLE.addService(deviceInfo);
 
     // Start advertising
     BLE.advertise();

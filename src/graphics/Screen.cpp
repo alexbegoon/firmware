@@ -447,7 +447,7 @@ void Screen::drawDigitalClockFrame(OLEDDisplay *display, OLEDDisplayUiState *sta
         display->drawString(x + 20, y + 2, batteryPercent);
     }
 
-    if (nimbleBluetooth && nimbleBluetooth->isConnected()) {
+    if (bleInstance && bleInstance->isConnected()) {
         drawBluetoothConnectedIcon(display, display->getWidth() - 18, y + 2);
     }
 
@@ -679,7 +679,7 @@ void Screen::drawAnalogClockFrame(OLEDDisplay *display, OLEDDisplayUiState *stat
         display->drawString(x + 20, y + 2, batteryPercent);
     }
 
-    if (nimbleBluetooth && nimbleBluetooth->isConnected()) {
+    if (bleInstance && bleInstance->isConnected()) {
         drawBluetoothConnectedIcon(display, display->getWidth() - 18, y + 2);
     }
 

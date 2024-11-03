@@ -16,7 +16,6 @@ class ArduinoBLEBluetooth : public BluetoothApi
     BLECharacteristic toRadio;
     BLECharacteristic logRadio;
     BLEService deviceInfo;
-    BLEService batteryService;
     BLEUnsignedCharCharacteristic batteryLevel;
 
   public:
