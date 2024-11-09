@@ -187,9 +187,10 @@ ErrorCode Router::sendLocal(meshtastic_MeshPacket *p, RxSource src)
             handleReceived(p, src);
         }
 
-        if (!p->channel && !p->pki_encrypted) { // don't override if a channel was requested
+        // don't override if a channel was requested and no need to set it when PKI is enforced
+        if (!p->channel && !p->pki_encrypted) {
             meshtastic_NodeInfoLite *node = nodeDB->getMeshNode(p->to);
-            if (node && node->user.public_key.size == 0) {
+            if (node) {
                 p->channel = node->channel;
                 LOG_DEBUG("localSend to channel %d", p->channel);
             }
@@ -489,7 +490,8 @@ meshtastic_Routing_Error perhapsEncode(meshtastic_MeshPacket *p)
         meshtastic_NodeInfoLite *node = nodeDB->getMeshNode(p->to);
         // We may want to retool things so we can send a PKC packet when the client specifies a key and nodenum, even if the node
         // is not in the local nodedb
-        if (
+        // First, only PKC encrypt packets we are originating
+        if (isFromUs(p) &&
             // Don't use PKC with Ham mode
             !owner.is_licensed &&
             // Don't use PKC if it's not explicitly requested and a non-primary channel is requested
