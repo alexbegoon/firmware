@@ -1,7 +1,7 @@
 #pragma once
 #include "BluetoothCommon.h"
 
-class NimbleBluetooth : public BluetoothApi
+class NimbleBluetooth : BluetoothApi
 {
   public:
     void setup();

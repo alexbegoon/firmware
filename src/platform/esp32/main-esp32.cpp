@@ -4,10 +4,6 @@
 #include "esp_task_wdt.h"
 #include "main.h"
 
-#if !MESHTASTIC_EXCLUDE_BLUETOOTH
-extern BluetoothApi *bleInstance;
-#endif
-
 #if !defined(CONFIG_IDF_TARGET_ESP32S2) && !MESHTASTIC_EXCLUDE_BLUETOOTH
 #include "BleOta.h"
 #include "nimble/NimbleBluetooth.h"
@@ -36,16 +32,16 @@ void setBluetoothEnable(bool enable)
     if (config.bluetooth.enabled == true)
 #endif
     {
-        if (!bleInstance) {
-            bleInstance = createBluetoothInstance();
+        if (!nimbleBluetooth) {
+            nimbleBluetooth = new NimbleBluetooth();
         }
-        if (enable && !bleInstance->isActive()) {
+        if (enable && !nimbleBluetooth->isActive()) {
             powerMon->setState(meshtastic_PowerMon_State_BT_On);
-            bleInstance->setup();
+            nimbleBluetooth->setup();
         }
         // For ESP32, no way to recover from bluetooth shutdown without reboot
         // BLE advertising automatically stops when MCU enters light-sleep(?)
-        // For deep-sleep, shutdown hardware with bleInstance->deinit(). Requires reboot to reverse
+        // For deep-sleep, shutdown hardware with nimbleBluetooth->deinit(). Requires reboot to reverse
     }
 }
 #else
@@ -114,8 +110,12 @@ void esp32Setup()
     LOG_DEBUG("Total PSRAM: %d", ESP.getPsramSize());
     LOG_DEBUG("Free PSRAM: %d", ESP.getFreePsram());
 
+    auto res = nvs_flash_init();
+    assert(res == ESP_OK);
+
     nvs_stats_t nvs_stats;
-    auto res = nvs_get_stats(NULL, &nvs_stats);
+    res = nvs_get_stats(NULL, &nvs_stats);
+
     assert(res == ESP_OK);
     LOG_DEBUG("NVS: UsedEntries %d, FreeEntries %d, AllEntries %d, NameSpaces %d", nvs_stats.used_entries, nvs_stats.free_entries,
               nvs_stats.total_entries, nvs_stats.namespace_count);
@@ -159,8 +159,9 @@ void esp32Setup()
 #ifdef CONFIG_IDF_TARGET_ESP32C6
     esp_task_wdt_config_t *wdt_config = (esp_task_wdt_config_t *)malloc(sizeof(esp_task_wdt_config_t));
     wdt_config->timeout_ms = APP_WATCHDOG_SECS * 1000;
+    wdt_config->idle_core_mask = 0;
     wdt_config->trigger_panic = true;
-    res = esp_task_wdt_init(wdt_config);
+    res = esp_task_wdt_reconfigure(wdt_config);
     assert(res == ESP_OK);
 #else
     res = esp_task_wdt_init(APP_WATCHDOG_SECS, true);

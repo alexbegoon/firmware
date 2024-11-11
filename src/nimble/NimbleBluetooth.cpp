@@ -1,5 +1,5 @@
 #include "configuration.h"
-#if !MESHTASTIC_EXCLUDE_BLUETOOTH && !defined(CONFIG_IDF_TARGET_ESP32C6)
+#if !MESHTASTIC_EXCLUDE_BLUETOOTH
 #include "BluetoothCommon.h"
 #include "NimbleBluetooth.h"
 #include "PowerFSM.h"
@@ -183,7 +183,7 @@ int NimbleBluetooth::getRssi()
     if (bleServer && isConnected()) {
         auto service = bleServer->getServiceByUUID(MESH_SERVICE_UUID);
         uint16_t handle = service->getHandle();
-        return NimBLEDevice::getClientByID(handle)->getRssi();
+        return NimBLEDevice::getClientByHandle(handle)->getRssi();
     }
     return 0; // FIXME figure out where to source this
 }
@@ -271,7 +271,7 @@ void NimbleBluetooth::startAdvertising()
 /// Given a level between 0-100, update the BLE attribute
 void updateBatteryLevel(uint8_t level)
 {
-    if ((config.bluetooth.enabled == true) && bleServer && bleInstance->isConnected()) {
+    if ((config.bluetooth.enabled == true) && bleServer && nimbleBluetooth->isConnected()) {
         BatteryCharacteristic->setValue(&level, 1);
         BatteryCharacteristic->notify();
     }

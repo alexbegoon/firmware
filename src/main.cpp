@@ -45,16 +45,8 @@
 #include "mesh/http/WebServer.h"
 #endif
 #if !MESHTASTIC_EXCLUDE_BLUETOOTH
-BluetoothApi *bleInstance = nullptr;
-#endif
-#if !MESHTASTIC_EXCLUDE_BLUETOOTH && !defined(CONFIG_IDF_TARGET_ESP32C6)
 #include "nimble/NimbleBluetooth.h"
-// Deprecated: Use bleInstance
 NimbleBluetooth *nimbleBluetooth = nullptr;
-#endif
-#if !MESHTASTIC_EXCLUDE_BLUETOOTH && defined(CONFIG_IDF_TARGET_ESP32C6)
-#include "ArduinoBLEBluetooth.h"
-ArduinoBLEBluetooth *arduinoBLE = nullptr;
 #endif
 #endif
 
@@ -1230,3 +1222,12 @@ void loop()
     }
 }
 #endif
+// Define app_main to bridge Arduino and ESP-IDF
+extern "C" void app_main(void)
+{
+    setup();
+    while (1) {
+        loop();
+        vTaskDelay(1); // Allows FreeRTOS to manage tasks
+    }
+}

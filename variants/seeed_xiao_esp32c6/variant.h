@@ -4,15 +4,6 @@
 #define BUTTON_PIN 22 // This is the Program Button
 #define BUTTON_NEED_PULLUP
 
-#define SOC_I2C_NUM 2
-
-#define HAS_ETHERNET 0
-
-#define PIN_ETHERNET_RESET 21
-#define PIN_ETHERNET_SS 26
-#define ETH_SPI_PORT SPI
-#define AQ_SET_PIN 10
-
 #define USE_RF95
 #define LORA_MISO 20
 #define LORA_SCK 19

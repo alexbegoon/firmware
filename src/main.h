@@ -1,6 +1,5 @@
 #pragma once
 
-#include "BluetoothCommon.h"
 #include "GPSStatus.h"
 #include "NodeStatus.h"
 #include "PowerStatus.h"
@@ -13,9 +12,6 @@
 #include <map>
 #if !defined(ARCH_PORTDUINO) && !defined(ARCH_STM32WL)
 #include <SparkFun_ATECCX08a_Arduino_Library.h>
-#endif
-#if !MESHTASTIC_EXCLUDE_BLUETOOTH
-extern BluetoothApi *bleInstance;
 #endif
 #if defined(ARCH_ESP32) && !defined(CONFIG_IDF_TARGET_ESP32S2)
 #include "nimble/NimbleBluetooth.h"
