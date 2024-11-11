@@ -2,22 +2,15 @@
 
 #include "BluetoothCommon.h"
 #include "main.h"
-#include "utility/GAP.h"
 #include <Arduino.h>
 #include <ArduinoBLE.h>
 
+/**
+ * @class ArduinoBLEBluetooth
+ * @brief Handles BLE operations for ESP32.
+ */
 class ArduinoBLEBluetooth : public BluetoothApi
 {
-  private:
-    BLEDevice peripheral;
-    BLEService meshService;
-    BLECharacteristic fromNum;
-    BLECharacteristic fromRadio;
-    BLECharacteristic toRadio;
-    BLECharacteristic logRadio;
-    BLEService deviceInfo;
-    BLEUnsignedCharCharacteristic batteryLevel;
-
   public:
     ArduinoBLEBluetooth();
     void setup() override;

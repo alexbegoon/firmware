@@ -2,114 +2,169 @@
 
 #if !MESHTASTIC_EXCLUDE_BLUETOOTH
 
+// UUID Definitions
 const char *MESH_SERVICE_UUID_PTR = MESH_SERVICE_UUID;
 const char *TORADIO_UUID_PTR = TORADIO_UUID;
 const char *FROMRADIO_UUID_PTR = FROMRADIO_UUID;
 const char *FROMNUM_UUID_PTR = FROMNUM_UUID;
 const char *LOGRADIO_UUID_PTR = LOGRADIO_UUID;
+const char *BATTERY_LEVEL_UUID_PTR = "2A19"; // Standard Battery Level UUID
 
 static ArduinoBLEBluetooth *bleInstancePtr = nullptr;
 
+#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+// Advertising parameters should have a global scope. Do NOT define them in 'setup' or in 'loop'
+const uint8_t completeRawAdvertisingData[] = {0x02, 0x01, 0x06, 0x09, 0xff, 0x01, 0x01, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05};
+
 /**
- * @brief Constructor initializes BLE services and characteristics.
+ * @brief Constructor initializes BLE instance pointer.
  */
 ArduinoBLEBluetooth::ArduinoBLEBluetooth()
-    : meshService(MESH_SERVICE_UUID_PTR), // Mesh Service UUID
-      fromNum(FROMNUM_UUID_PTR, BLENotify, ""), fromRadio(FROMRADIO_UUID_PTR, BLERead | BLENotify, ""),
-      toRadio(TORADIO_UUID_PTR, BLEWrite | BLEWriteWithoutResponse, ""), logRadio(LOGRADIO_UUID_PTR, BLENotify, ""),
-      deviceInfo("180F"), // Battery Service UUID
-      batteryLevel("2A19", BLERead | BLENotify)
 {
     bleInstancePtr = this; // Assign the static instance pointer
 }
 
 void ArduinoBLEBluetooth::setup()
 {
-    LOG_INFO("Setting up ArduinoBLEBluetooth...");
+    BLEService myService("fff0");
+    BLEIntCharacteristic myCharacteristic("fff1", BLERead | BLEBroadcast);
 
-    // Begin BLE
     if (!BLE.begin()) {
-        LOG_ERROR("Failed to initialize BLE!");
-
+        Serial.println("failed to initialize BLE!");
         while (1)
-            ; // Halt execution
+            ;
     }
 
-    // Set the local name of the device
-    BLE.setDeviceName("ESP32-C6_Device");
-    BLE.setLocalName("ESP32-C6_Device");
-    BLE.setAdvertisedService(meshService);
-    BLE.setAdvertisedService(deviceInfo);
+    myService.addCharacteristic(myCharacteristic);
+    BLE.addService(myService);
 
-    // Add characteristics to Mesh Service
-    meshService.addCharacteristic(toRadio);
-    meshService.addCharacteristic(fromRadio);
-    meshService.addCharacteristic(fromNum);
-    meshService.addCharacteristic(logRadio);
+    // Build advertising data packet
+    BLEAdvertisingData advData;
+    // If a packet has a raw data parameter, then all the other parameters of the packet will be ignored
+    advData.setRawData(completeRawAdvertisingData, sizeof(completeRawAdvertisingData));
+    // Copy set parameters in the actual advertising packet
+    BLE.setAdvertisingData(advData);
 
-    // Add Battery Service and its characteristic
-    deviceInfo.addCharacteristic(batteryLevel);
+    // Build scan response data packet
+    BLEAdvertisingData scanData;
+    scanData.setLocalName("Test advertising raw data");
+    // Copy set parameters in the actual scan response packet
+    BLE.setScanResponseData(scanData);
 
-    // Add services to BLE
-    BLE.addService(meshService);
-    BLE.addService(deviceInfo);
-
-    // Start advertising
     BLE.advertise();
+
     LOG_INFO("BLE Device is now advertising...");
+    //    LOG_INFO("Setting up ArduinoBLEBluetooth...");
+    //
+    //    // Initialize BLE
+    //    BLEDevice::init("ESP32-C6_Device");
+    //    pServer = BLEDevice::createServer();
+    //
+    //    // Create Mesh Service
+    //    meshService = pServer->createService(MESH_SERVICE_UUID_PTR);
+    //
+    //    // Create Characteristics with appropriate properties
+    //    fromNum = meshService->createCharacteristic(
+    //        FROMNUM_UUID_PTR,
+    //        BLECharacteristic::PROPERTY_NOTIFY
+    //    );
+    //
+    //    fromRadio = meshService->createCharacteristic(
+    //        FROMRADIO_UUID_PTR,
+    //        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+    //    );
+    //
+    //    toRadio = meshService->createCharacteristic(
+    //        TORADIO_UUID_PTR,
+    //        BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
+    //    );
+    //
+    //    logRadio = meshService->createCharacteristic(
+    //        LOGRADIO_UUID_PTR,
+    //        BLECharacteristic::PROPERTY_NOTIFY
+    //    );
+    //
+    //    // Create Device Info (Battery Service)
+    //    deviceInfo = pServer->createService("180F"); // Battery Service UUID
+    //    batteryLevel = deviceInfo->createCharacteristic(
+    //        BATTERY_LEVEL_UUID_PTR,
+    //        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY
+    //    );
+    //
+    //    // Start services
+    //    meshService->start();
+    //    deviceInfo->start();
+    //
+    //    // Start advertising
+    //    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    //    pAdvertising->addServiceUUID(MESH_SERVICE_UUID_PTR);
+    //    pAdvertising->setScanResponse(true);
+    //    pAdvertising->setMinPreferred(0x06);  // Functions that help with iPhone connections issue
+    //    pAdvertising->setMinPreferred(0x12);
+    //    BLEDevice::startAdvertising();
+    //    LOG_INFO("BLE Device is now advertising...");
 }
 
 void ArduinoBLEBluetooth::shutdown()
 {
-    LOG_INFO("Shutting down ArduinoBLEBluetooth...");
-    BLE.stopAdvertise();
-    BLE.end();
-    LOG_INFO("BLE shutdown complete.");
+    // TODO
+    return;
+
+    //    LOG_INFO("Shutting down ArduinoBLEBluetooth...");
+    //    BLEDevice::stopAdvertising();
+    //    BLEDevice::deinit();
+    //    LOG_INFO("BLE shutdown complete.");
 }
 
 void ArduinoBLEBluetooth::clearBonds()
 {
-    // ArduinoBLE does not support bond management directly
-    LOG_INFO("Clear Bonds: Not supported with ArduinoBLE.");
+    // TODO
 }
 
 bool ArduinoBLEBluetooth::isConnected()
 {
-    return BLE.connected();
+    // TODO
+    return false;
+    //    return pServer->getConnectedCount() > 0;
 }
 
 int ArduinoBLEBluetooth::getRssi()
 {
-    return peripheral.rssi();
+    // ESP32 BLE library does not provide RSSI directly
+    LOG_WARN("RSSI retrieval not implemented.");
+    return 0;
 }
 
 bool ArduinoBLEBluetooth::isActive()
 {
-    // Active if advertising or connected
-    return GAP.advertising() || BLE.connected();
+    // TODO
+    return false;
+    //    return isConnected(); // Active if connected
 }
 
 void ArduinoBLEBluetooth::sendLog(const uint8_t *logMessage, size_t length)
 {
-    if (logRadio.written() || !BLE.connected()) {
-        LOG_INFO("LogRadioCharacteristic not writable or BLE not connected.");
-        return;
-    }
-
-    // Convert logMessage to String for ArduinoBLE
-    String logStr = "";
-    for (size_t i = 0; i < length; i++) {
-        logStr += String((char)logMessage[i]);
-    }
-
-    logRadio.writeValue(logStr.c_str());
-    LOG_INFO("Log message sent via BLE.");
+    // TODO
+    return;
+    //    if (!isConnected()) {
+    //        LOG_INFO("BLE not connected. Cannot send log.");
+    //        return;
+    //    }
+    //
+    //    // Convert logMessage to String for BLE
+    //    std::string logStr(reinterpret_cast<const char*>(logMessage), length);
+    //    logRadio->setValue(logStr);
+    //    logRadio->notify();
+    //    LOG_INFO("Log message sent via BLE.");
 }
 
 void ArduinoBLEBluetooth::deinit()
 {
+    // TODO
     LOG_INFO("Deinitializing ArduinoBLEBluetooth...");
+    //    shutdown();
     // Any additional de-initialization if needed
 }
 
-#endif
+#endif // MESHTASTIC_EXCLUDE_BLUETOOTH
