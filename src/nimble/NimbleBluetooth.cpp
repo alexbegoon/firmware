@@ -49,7 +49,7 @@ static uint8_t lastToRadio[MAX_TO_FROM_RADIO_SIZE];
 
 class NimbleBluetoothToRadioCallback : public NimBLECharacteristicCallbacks
 {
-    virtual void onWrite(NimBLECharacteristic *pCharacteristic)
+    virtual void onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo)
     {
         LOG_INFO("To Radio onwrite");
         auto val = pCharacteristic->getValue();
@@ -66,8 +66,9 @@ class NimbleBluetoothToRadioCallback : public NimBLECharacteristicCallbacks
 
 class NimbleBluetoothFromRadioCallback : public NimBLECharacteristicCallbacks
 {
-    virtual void onRead(NimBLECharacteristic *pCharacteristic)
+    virtual void onRead(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo)
     {
+        LOG_INFO("From Radio onRead");
         uint8_t fromRadioBytes[meshtastic_FromRadio_size];
         size_t numBytes = bluetoothPhoneAPI->getFromRadio(fromRadioBytes);
 
@@ -79,7 +80,7 @@ class NimbleBluetoothFromRadioCallback : public NimBLECharacteristicCallbacks
 
 class NimbleBluetoothServerCallback : public NimBLEServerCallbacks
 {
-    virtual uint32_t onPassKeyRequest()
+    virtual void onPassKeyEntry(NimBLEConnInfo &connInfo)
     {
         uint32_t passkey = config.bluetooth.fixed_pin;
 
@@ -120,7 +121,7 @@ class NimbleBluetoothServerCallback : public NimBLEServerCallbacks
 #endif
         passkeyShowing = true;
 
-        return passkey;
+        NimBLEDevice::injectPassKey(connInfo, passkey);
     }
 
     virtual void onAuthenticationComplete(ble_gap_conn_desc *desc)
