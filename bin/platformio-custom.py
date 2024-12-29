@@ -134,4 +134,4 @@ for flag in flags:
 if projenv:
     projenv.Append(CCFLAGS=flags)
 
-env.Append(BUILD_FLAGS=flags)
+env.Append(CCFLAGS=flags)
