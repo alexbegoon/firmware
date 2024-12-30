@@ -1,5 +1,3 @@
-#ifdef ARCH_PORTDUINO
-
 #include "CryptoEngine.h"
 #include "PortduinoGPIO.h"
 #include "SPIChip.h"
@@ -577,4 +575,3 @@ bool MAC_from_string(std::string mac_str, uint8_t *dmac)
         return false;
     }
 }
-#endif // ARCH_PORTDUINO

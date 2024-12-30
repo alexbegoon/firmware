@@ -1,5 +1,3 @@
-#ifdef ARCH_NRF52
-
 #include "configuration.h"
 #include <Adafruit_TinyUSB.h>
 #include <Adafruit_nRFCrypto.h>
@@ -312,4 +310,3 @@ void enterDfuMode()
     enterUf2Dfu();
 #endif
 }
-#endif // ARCH_NRF52

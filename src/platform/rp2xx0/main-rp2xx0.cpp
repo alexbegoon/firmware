@@ -1,5 +1,3 @@
-#ifdef ARCH_RP2040
-
 #include "configuration.h"
 #include "hardware/xosc.h"
 #include <hardware/clocks.h>
@@ -147,4 +145,3 @@ void initVariant()
     pll_deinit(pll_usb);
 }
 #endif
-#endif // ARCH_RP2040
