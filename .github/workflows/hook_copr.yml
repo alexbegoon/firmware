@@ -25,17 +25,13 @@ jobs:
           ref: ${{ github.ref }}
           repository: ${{ github.repository }}
 
-      - name: Install Python dependencies
-        run: |
-          pip install requests
-
       - name: Trigger COPR build
-        uses: akdev1l/copr-build@main
+        uses: vidplace7/copr-build@main
         id: copr_build
         env:
           COPR_API_TOKEN_CONFIG: ${{ secrets.COPR_API_CONFIG }}
         with:
-          owner: meshtastic
+          owner: "@meshtastic"
           package-name: meshtasticd
           project-name: ${{ inputs.copr_project }}
           git-remote: "${{ github.server_url }}/${{ github.repository }}.git"
