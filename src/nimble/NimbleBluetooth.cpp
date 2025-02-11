@@ -62,6 +62,17 @@ class NimbleBluetoothToRadioCallback : public NimBLECharacteristicCallbacks
             LOG_DEBUG("Drop dup ToRadio packet we just saw");
         }
     }
+    virtual void onNotify(NimBLECharacteristic* pCharacteristic) {
+        LOG_INFO("NimbleBluetoothToRadioCallback onNotify\n");
+    }
+
+    virtual void onStatus(NimBLECharacteristic* pCharacteristic, int code) {
+        LOG_INFO("NimbleBluetoothToRadioCallback onStatus\n");
+    }
+
+    virtual void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) {
+         LOG_INFO("NimbleBluetoothToRadioCallback onSubscribe\n");
+    }
 };
 
 class NimbleBluetoothFromRadioCallback : public NimBLECharacteristicCallbacks
@@ -75,11 +86,41 @@ class NimbleBluetoothFromRadioCallback : public NimBLECharacteristicCallbacks
 
         pCharacteristic->setValue(fromRadioByteString);
     }
+     virtual void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+        LOG_INFO("NimbleBluetoothFromRadioCallback onWrite\n");
+    }
+
+    virtual void onNotify(NimBLECharacteristic* pCharacteristic) {
+        LOG_INFO("NimbleBluetoothFromRadioCallback onNotify\n");
+
+    }
+
+    virtual void onStatus(NimBLECharacteristic* pCharacteristic, int code) {
+        LOG_INFO("NimbleBluetoothFromRadioCallback onStatus\n");
+    }
+
+    virtual void onSubscribe(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) {
+        LOG_INFO("NimbleBluetoothFromRadioCallback onSubscribe\n");
+    }
 };
 
 class NimbleBluetoothServerCallback : public NimBLEServerCallbacks
 {
+    virtual void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) {
+        LOG_INFO("NimbleBluetoothServerCallback onConnect address: %s\n", connInfo.getAddress().toString().c_str());
+        bleServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 18);
+    }
+
+    virtual void onMTUChange(uint16_t MTU, NimBLEConnInfo& connInfo) {
+        LOG_INFO("NimbleBluetoothServerCallback MTU updated: %u for connection ID: %u\n", MTU, connInfo.getConnHandle());
+        bleServer->updateConnParams(connInfo.getConnHandle(), 24, 48, 0, 60);
+    }
+
+#ifdef ESP32_C6
+    virtual uint32_t onPassKeyDisplay()
+#else
     virtual void onPassKeyEntry(NimBLEConnInfo &connInfo)
+#endif
     {
         uint32_t passkey = config.bluetooth.fixed_pin;
 
@@ -119,8 +160,11 @@ class NimbleBluetoothServerCallback : public NimBLEServerCallbacks
         });
 #endif
         passkeyShowing = true;
-
+#ifdef ESP32_C6
+        return passkey;
+#else
         NimBLEDevice::injectPassKey(connInfo, passkey);
+#endif
     }
 
     virtual void onAuthenticationComplete(NimBLEConnInfo &connInfo)
@@ -264,8 +308,31 @@ void NimbleBluetooth::startAdvertising()
 {
     NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
     pAdvertising->reset();
+#ifdef ESP32_C6
+    // Create a broadcast data object
+    NimBLEAdvertisementData advertisementData;
+    // Set advertising Flags
+    uint8_t flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
+    // Type 0x01
+    advertisementData.setFlags(flags);
+    // Device name 
+    // Type 0x09
+    advertisementData.setName(getDeviceName());
+    NimBLEAdvertisementData scanResponseData;
+    // Add a master service UUID 
+    // Type 0x07
+    scanResponseData.addServiceUUID(NimBLEUUID(MESH_SERVICE_UUID));
+    // Add the battery service UUID to the scan response
+    // Type 0x03
+    scanResponseData.addServiceUUID(NimBLEUUID((uint16_t)0x180F));
+    // Apply broadcast and scan response data
+    pAdvertising->setAdvertisementData(advertisementData);
+    pAdvertising->setScanResponseData(scanResponseData);
+#else
     pAdvertising->addServiceUUID(MESH_SERVICE_UUID);
     pAdvertising->addServiceUUID(NimBLEUUID((uint16_t)0x180f)); // 0x180F is the Battery Service
+#endif
+   
     pAdvertising->start(0);
 }
 
