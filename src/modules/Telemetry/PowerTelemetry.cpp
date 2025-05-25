@@ -186,8 +186,6 @@ bool PowerTelemetryModule::getPowerTelemetry(meshtastic_Telemetry *m)
         valid = ina3221Sensor.getMetrics(m);
     if (max17048Sensor.hasSensor())
         valid = max17048Sensor.getMetrics(m);
-    if (max17261Sensor.hasSensor())
-        valid = max17261Sensor.getMetrics(m);
 #endif
 
     return valid;
